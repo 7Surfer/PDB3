@@ -197,6 +197,7 @@ class DB():
             self._writePlayer(player)
             self._writeAllianz(player)
             self._writeStats(player)
+        self._logger.debug("Complete Player write complete count: %s",len(players))
     
     def setAuthorization(self, userId:str , role:int):
         sql = """INSERT INTO public.authorization(
@@ -205,7 +206,6 @@ class DB():
                 SET "roleId" = excluded."roleId";"""
         
         self._write(sql,(userId, role))
-        self._logger.debug("Complete Player write complete count: %s",len(players))
     
     def setPlanet(self, playerId:str, galaxy:int, system:int, position:int):
         sql = """INSERT INTO public.planet(
