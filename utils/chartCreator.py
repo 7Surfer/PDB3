@@ -13,23 +13,23 @@ class ChartCreator():
     _defensiveScoreColor= "#EDC948"
 
     #Custom Chart Options
-    RANK = 0
-    SCORE = 1
-    RESEARCHRANK = 2
-    RESEARCHSCORE = 3
-    BUILDINGRANK = 4
-    BUILDINGSCORE = 5
-    DEFENSIVERANK = 6
-    DEFENSIVESCORE = 7
-    FLEETRANK = 8
-    FLEETSCORE = 9
-    BATTLESWON = 10
-    BATTLESLOST = 11
-    BATTLESDRAW = 12
-    DEBRISMETAL = 13
-    DEBRISCRYSTAL = 14
-    UNITSDESTROYED = 15
-    UNITSLOST = 16
+    RANK = "0"
+    SCORE = "1"
+    RESEARCHRANK = "2"
+    RESEARCHSCORE = "3"
+    BUILDINGRANK = "4"
+    BUILDINGSCORE = "5"
+    DEFENSIVERANK = "6"
+    DEFENSIVESCORE = "7"
+    FLEETRANK = "8"
+    FLEETSCORE = "9"
+    BATTLESWON = "10"
+    BATTLESLOST = "11"
+    BATTLESDRAW = "12"
+    DEBRISMETAL = "13"
+    DEBRISCRYSTAL = "14"
+    UNITSDESTROYED = "15"
+    UNITSLOST = "16"
 
     #Group Options to Axis
     _highAxis = [SCORE, RESEARCHSCORE, BUILDINGSCORE, DEFENSIVESCORE, FLEETSCORE,
@@ -225,7 +225,7 @@ class ChartCreator():
                 case self.BUILDINGSCORE:
                     qc.config["data"]["datasets"].append({
                         "yAxisID": "highAxis",
-                        "label": "Forschungspunkte",
+                        "label": "Gebäudepunkte",
                         "data": chartData["buildingScore"],
                         "fill": False,
                         "pointRadius": 1,
@@ -242,7 +242,7 @@ class ChartCreator():
                 case self.DEFENSIVESCORE:
                     qc.config["data"]["datasets"].append({
                         "yAxisID": "highAxis",
-                        "label": "Forschungspunkte",
+                        "label": "Verteidigungspunkte",
                         "data": chartData["defensiveScore"],
                         "fill": False,
                         "pointRadius": 1,
@@ -259,7 +259,7 @@ class ChartCreator():
                 case self.FLEETSCORE:
                     qc.config["data"]["datasets"].append({
                         "yAxisID": "highAxis",
-                        "label": "Forschungspunkte",
+                        "label": "Flottenpunkte",
                         "data": chartData["fleetScore"],
                         "fill": False,
                         "pointRadius": 1,
@@ -316,8 +316,8 @@ class ChartCreator():
                 case self.UNITSLOST:
                     qc.config["data"]["datasets"].append({
                         "yAxisID": "unitsLost",
-                        "label": "Zerstörte Einheiten",
-                        "data": chartData["unitsDestroyed"],
+                        "label": "Verlorene Einheiten",
+                        "data": chartData["unitsLost"],
                         "fill": False,
                         "pointRadius": 1}
                     )
@@ -327,7 +327,7 @@ class ChartCreator():
         lowAxisNotSet = True
         for type in types:
             if type in self._highAxis and highAxisNotSet:
-                highAxisNotSet = True
+                highAxisNotSet = False
                 qc.config["options"]["scales"]["yAxes"].append(
                     {
                         "id": "highAxis",
@@ -341,8 +341,8 @@ class ChartCreator():
                         }
                     }
                 )
-            if type in self._highAxis and lowAxisNotSet:
-                lowAxisNotSet = True
+            if type in self._lowAxis and lowAxisNotSet:
+                lowAxisNotSet = False
                 qc.config["options"]["scales"]["yAxes"].append(
                     {
                         "id": "lowAxis",
@@ -351,5 +351,4 @@ class ChartCreator():
                         "stacked": True,
                     }
                 )
-       
         return qc.get_short_url()
