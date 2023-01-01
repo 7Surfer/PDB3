@@ -316,7 +316,6 @@ class Stats(interactions.Extension):
 
 
     def _getInactiveContent(self, inactiveData:dict, lowerLimit:int):
-
         inactivePlayers = []
         for playerData in inactiveData.values():
             count = 0
