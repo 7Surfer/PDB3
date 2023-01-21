@@ -361,8 +361,8 @@ class Planet(interactions.Extension):
                 planet[3] == system and 
                 planet[4] == position and
                 planet[5]):
-
-                self._
+                
+                await self._notify.checkSensor(planet,level)
                 self._db.setSensor(playerData[1],galaxy,system,position,level)
 
                 try:
