@@ -16,7 +16,7 @@ class StatsCreator():
     def getStatsContent(self, playerName:str):
         playerData = self._db.getPlayerData(playerName)
         if not playerData:
-            return False
+            raise ValueError(f"Spieler nicht gefunden: {playerName}")
         
         playerStats = self._db.getPlayerStats(playerData[1])
         allianceData = self._db.getAllianceById(playerData[5])
@@ -87,7 +87,7 @@ class StatsCreator():
             ),
             interactions.Button(
                 style=interactions.ButtonStyle.PRIMARY,
-                label='Triebwersfroschung ändern',
+                label='Triebwerksforschung ändern',
                 custom_id='btn_research_drive'
             ),
             interactions.Button(
@@ -127,7 +127,7 @@ class StatsCreator():
 
         planetData.sort(key=lambda element: (element[2], element[3], element[4]))
         for planet in planetData:
-            planetEmbeds[0].value += f"{planet[2]}\:{planet[3]}\:{planet[4]}\n"
+            planetEmbeds[0].value += f"[{planet[2]}\:{planet[3]}\:{planet[4]}](https://pr0game.com/uni2/game.php?page=galaxy&galaxy={planet[2]}&system={planet[3]})\n"
             
             value = "-"
             if planet[5]:

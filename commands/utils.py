@@ -30,7 +30,7 @@ class Bot(interactions.Extension):
 
         self._update.stop()
         await ctx.send("Schlafenszeit zZz")
-        await self._notify.notify(Notify.CHANNEL, "Ich bin Offline (planmäsig)")
+        await self._notify.notify(Notify.CHANNEL, "Ich bin Offline (planmäßig)")
         await self._client._stop()
 
     @interactions.extension_command(
@@ -74,6 +74,7 @@ class Bot(interactions.Extension):
         
         featureLIst = """
         Geplante Features (ungeordnet):
+            - Löschen von alten Userdaten
             - Notification Service bei Events
                 - Mond und nun in reichweite
                 - Anmeldbar (private/public nachricht)
