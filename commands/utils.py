@@ -74,7 +74,8 @@ class Bot(interactions.Extension):
         
         featureLIst = """
         Geplante Features (ungeordnet):
-            - Performanceupgrade bei Planetenupdate
+            - Prozentuales Punktewachstum eines oder mehrere Spieler (vergleichbar)
+                - chart mit Trendlinine
             - Playerhistory. Zusätzlich speichern Wenn sich name oder Allianz ändert
               (aktuell wird überschrieben)
             - Notify
