@@ -16,7 +16,6 @@ class Planet(interactions.Extension):
         self._statsCreator:StatsCreator = args[2]
         self._notify:Notify = args[3]
     
-    
     @interactions.extension_command(
         name="planet",
         description="Speichert ein Planet",
@@ -47,6 +46,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
+    @interactions.autodefer(delay=5)
     async def planet(self, ctx: interactions.CommandContext, username:str, galaxy:int, system:int, position: int):
         self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
         self._logger.debug("Arguments: %s", str((galaxy,system,position)))
@@ -66,6 +66,7 @@ class Planet(interactions.Extension):
         #save planet
         self._db.updatePlanet(galaxy,system,position,playerData[1])
         
+        await ctx.send("Working...")
         try:
             statsEmbed,statsComponent = self._statsCreator.getStatsContent(username)
         except ValueError as err:
@@ -73,8 +74,9 @@ class Planet(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.send(embeds=statsEmbed, components=statsComponent)
+        await ctx.edit("",embeds=statsEmbed, components=statsComponent)
 
+    
     @interactions.extension_command(
         name="del_planet",
         description="Löscht ein Planet",
@@ -99,6 +101,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
+    @interactions.autodefer(delay=5)
     async def delPlanet(self, ctx: interactions.CommandContext, galaxy:int, system:int, position: int):
         self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
         self._logger.debug("Arguments: %s", str((galaxy,system,position)))
@@ -117,6 +120,7 @@ class Planet(interactions.Extension):
         self._db.updatePlanet(galaxy,system,position)
         await ctx.send(f"Planet Gelöscht {galaxy}\:{system}\:{position}")
 
+    
     @interactions.extension_command(
         name="moon",
         description="Speichert ein Mond",
@@ -147,6 +151,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
+    @interactions.autodefer(delay=5)
     async def moon(self, ctx: interactions.CommandContext, username:str, galaxy:int, system:int, position: int):
         self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
         self._logger.debug("Arguments: %s", str((galaxy,system,position)))
@@ -178,18 +183,20 @@ class Planet(interactions.Extension):
 
                 self._db.setMoon(playerData[1],galaxy,system,position,True)
 
+                await ctx.send("Working...")
                 try:
                     statsEmbed,statsComponent = self._statsCreator.getStatsContent(username)
                 except ValueError as err:
                     self._logger.debug(err)
                     await ctx.send(str(err), ephemeral=True)
                     return
-                await ctx.send(embeds=statsEmbed, components=statsComponent)
+                await ctx.edit("",embeds=statsEmbed, components=statsComponent)
                 return
 
         #No planet found
-        await ctx.send(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
+        await ctx.edit(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
 
+    
     @interactions.extension_command(
         name="del_moon",
         description="Speichert ein Mond",
@@ -220,6 +227,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
+    @interactions.autodefer(delay=5)
     async def delMoon(self, ctx: interactions.CommandContext, username:str, galaxy:int, system:int, position: int):
         self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
         self._logger.debug("Arguments: %s", str((galaxy,system,position)))
@@ -250,21 +258,21 @@ class Planet(interactions.Extension):
                 planet[5]):
 
                 self._db.setMoon(playerData[1],galaxy,system,position,False)
-
+                await ctx.send("Working...")
                 try:
                     statsEmbed,statsComponent = self._statsCreator.getStatsContent(username)
                 except ValueError as err:
                     self._logger.debug(err)
                     await ctx.send(str(err), ephemeral=True)
                     return
-                await ctx.send(embeds=statsEmbed, components=statsComponent)
+                await ctx.edit("",embeds=statsEmbed, components=statsComponent)
                 return
 
         #No planet found
-        await ctx.send(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
+        await ctx.edit(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
 
     @interactions.extension_command(
-        name="sensor",
+        name="phalanx",
         description="Setzt das Sensor Phalanx Level auf einem Mond",
         options = [
             interactions.Option(
@@ -297,9 +305,9 @@ class Planet(interactions.Extension):
                 type=interactions.OptionType.INTEGER,
                 required=True
             )
-        ],
+        ]
     )
-    async def sensor(self, ctx: interactions.CommandContext, username:str, galaxy:int, system:int, position: int, level:int):
+    async def phalanx(self, ctx: interactions.CommandContext, username:str, galaxy:int, system:int, position: int, level:int):
         self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
         self._logger.debug("Arguments: %s", str((galaxy,system,position)))
 
@@ -330,18 +338,146 @@ class Planet(interactions.Extension):
                 
                 await self._notify.checkSensor(planet,level)
                 self._db.setSensor(playerData[1],galaxy,system,position,level)
-
+                
+                await ctx.send("Working...")
                 try:
                     statsEmbed,statsComponent = self._statsCreator.getStatsContent(username)
                 except ValueError as err:
                     self._logger.debug(err)
                     await ctx.send(str(err), ephemeral=True)
                     return
-                await ctx.send(embeds=statsEmbed, components=statsComponent)
+                await ctx.edit("",embeds=statsEmbed, components=statsComponent)
                 return
 
         #No planet/moon found
-        await ctx.send(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
+        await ctx.edit(f"Planet für Spieler nicht gefunden: {username}", ephemeral=True)
+
+    @interactions.extension_command(
+        name="in_range",
+        description="Zeigt an ob eine Position in reichweite eines Sensor Phalanx ist",
+        options = [
+            interactions.Option(
+                name="galaxy",
+                description="Galaxy",
+                type=interactions.OptionType.INTEGER,
+                required=True
+            ),
+            interactions.Option(
+                name="system",
+                description="System",
+                type=interactions.OptionType.INTEGER,
+                required=True
+            )
+        ],
+    )
+    async def inRange(self, ctx: interactions.CommandContext, galaxy:int, system:int):
+        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+
+        if not self._auth.check(ctx.user.id, ctx.command.name):
+            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+            return
+
+        try:
+            self._checkValidPosition(galaxy,system,1)
+        except ValueError as err:
+            self._logger.debug(err)
+            await ctx.send(str(err), ephemeral=True)
+            return
+
+        galaxyMoons = self._db.getAllGalaxyMoons(galaxy)
+        if not galaxyMoons:
+            await ctx.send(f"Keine Moonde in der Galaxy: {galaxy}", ephemeral=True)
+            return
+
+        result = ""
+        for moon in galaxyMoons:
+            if moon[2] == 0:
+                continue
+            if self._statsCreator.isPlanetInSensorRange(moon[1],moon[2], system):
+                result += f"[{galaxy}\:{moon[1]}](https://pr0game.com/uni2/game.php?page=galaxy&galaxy={galaxy}&system={moon[1]})\n"
+
+        resultEmbed = interactions.Embed(
+            title= "Monde In Scanreichweite",
+            description= f"für Planet auf Position [{galaxy}\:{system}](https://pr0game.com/uni2/game.php?page=galaxy&galaxy={galaxy}&system={system})",
+            fields= [
+                        interactions.EmbedField(
+                        inline=True,
+                        name="Monde:",
+                        value=result
+                    )
+                ]
+            )
+        
+        if not result:
+            await ctx.send(f"Keine Monde in Reichweite")
+            return
+        
+        await ctx.send(embeds=resultEmbed)
+    
+    @interactions.extension_command(
+        name="all_moons",
+        description="Zeigt eine Liste aller Monde in einer Galaxy an",
+        options = [
+            interactions.Option(
+                name="galaxy",
+                description="Galaxy",
+                type=interactions.OptionType.INTEGER,
+                required=True
+            )
+        ],
+    )
+    async def all_moons(self, ctx: interactions.CommandContext, galaxy:int):
+        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+
+        if not self._auth.check(ctx.user.id, ctx.command.name):
+            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+            return
+
+        try:
+            self._checkValidPosition(galaxy)
+        except ValueError as err:
+            self._logger.debug(err)
+            await ctx.send(str(err), ephemeral=True)
+            return
+
+        galaxyMoons = self._db.getAllGalaxyMoons(galaxy)
+        if not galaxyMoons:
+            await ctx.send(f"Keine Moonde in der Galaxy: {galaxy}", ephemeral=True)
+            return
+
+        moonFields = []
+        fieldValue = ""
+        sortedMoons = sorted(galaxyMoons, key = lambda x: x[1])
+        for idx,moon in enumerate(sortedMoons):
+            if idx%10 == 0 and fieldValue:
+                moonFields.append(
+                    interactions.EmbedField(
+                        name="Position",
+                        value=fieldValue,
+                        inline=True
+                    )
+                )
+                fieldValue = ""
+            
+            fieldValue += f"[{galaxy}\:{moon[1]}](https://pr0game.com/uni2/game.php?page=galaxy&galaxy={galaxy}&system={moon[1]})\n"
+        
+        #Add not fully filled Field (if exist)
+        if fieldValue:
+            moonFields.append(
+                interactions.EmbedField(
+                    name="Position",
+                    value=fieldValue,
+                    inline=True
+                )
+            )
+
+        embed = interactions.Embed(
+            title=f"Alle Monde",
+            description= f"{len(galaxyMoons)} Monde in Galaxy: {galaxy}",
+            fields = moonFields
+        )
+        
+        await ctx.send(embeds=embed)
 
     @interactions.extension_command(
         name="alliance_position",
@@ -411,7 +547,7 @@ class Planet(interactions.Extension):
         
         return planetFields
 
-    def _checkValidPosition(self, galaxy:int, system:int, position:int):
+    def _checkValidPosition(self, galaxy:int, system:int = 1, position:int = 1):
         
         if galaxy < 1 or galaxy > 4:
             raise ValueError("Galaxy muss zwischen 1 und 4 liegen")

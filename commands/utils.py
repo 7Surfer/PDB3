@@ -74,7 +74,7 @@ class Bot(interactions.Extension):
         
         featureLIst = """
         Geplante Features (ungeordnet):
-            - +- Der letzten X tage. /stats [username] [optional Zeitfesnster]
+            - Der letzten X tage. /stats [username] [optional Zeitfesnster]
             - Prozentuales Punktewachstum eines oder mehrere Spieler (vergleichbar)
                 - chart mit Trendlinine
             - Playerhistory. Zusätzlich speichern Wenn sich name oder Allianz ändert

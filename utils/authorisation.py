@@ -9,7 +9,7 @@ class Authorization():
     ADMIN = 2
     ADMIN_COMMAND_LIST = ("update","shutdown","admin","auth", "Auth","add_update_channel")
     USER = 3
-    USER_COMMAND_LIST = ("stats", "planet", "chart", "research", "alliance", "moon", "features", "inactive", "alliance_position", "notify")
+    USER_COMMAND_LIST = ("stats", "planet", "chart", "research", "alliance", "moon", "features", "inactive", "alliance_position", "notify", "in_range", "all_moons")
 
     NOT_AUTHORIZED_EMBED = interactions.Embed(
         title="Nicht Authorisiert",
@@ -54,6 +54,6 @@ class Authorization():
         self._logger.debug("Undefined Group")
         return False
 
-    def add(self, userId:int, role:int):
-        return self._db.setAuthorization(str(userId), role)
+    def add(self, userId:int, role:int, username:str):
+        return self._db.setAuthorization(str(userId), role, username)
 

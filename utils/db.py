@@ -197,7 +197,7 @@ class DB():
                 "galaxy" = excluded."galaxy",
                 "system" = excluded."system",
                 "position" = excluded."position",
-                "timestamp" =  now()"""
+                "timestamp" = now()"""
         
         self._write(sql,(playerId, galaxy, system, position))
     
@@ -229,6 +229,23 @@ class DB():
             ORDER BY player."playerId", stats."timestamp" DESC"""
 
         return self._read(sql,(allianceID,))
+
+    def getAllGalaxyMoons(self, galaxy:int):
+        sql = """SELECT "playerId",
+            "system",
+            "sensorPhalanx"
+        FROM PUBLIC."planet"
+        WHERE PLANET."galaxy" = %s
+            AND "moon" = TRUE"""
+
+        return self._read(sql,(galaxy,))
+
+    def getAllianceMember(self, allianceId):
+        sql = """SELECT "playerId"
+        FROM public.player
+        WHERE "allianceId" = %s"""
+
+        return self._read(sql,(allianceId,))
 
     def getAllAllianceStats(self, allianceID:str):
         sql = """
@@ -344,13 +361,13 @@ class DB():
             self._writeStats(player)
         self._logger.debug("Complete Player write complete count: %s",len(players))
     
-    def setAuthorization(self, userId:str , role:int):
+    def setAuthorization(self, userId:str , role:int, username:str):
         sql = """INSERT INTO public.authorization(
-            "userId", "roleId")
-            VALUES (%s, %s) ON CONFLICT ("userId") DO UPDATE
+            "userId", "roleId", "username")
+            VALUES (%s, %s, %s) ON CONFLICT ("userId") DO UPDATE
                 SET "roleId" = excluded."roleId";"""
         
-        self._write(sql,(userId, role))
+        self._write(sql,(userId, role, username))
     
     def setMoon(self, playerId:str, galaxy:int, system:int, position:int, moon:bool):
         sql = """UPDATE PUBLIC."planet"
@@ -364,10 +381,11 @@ class DB():
     
     def setSensor(self, playerId:str, galaxy:int, system:int, position:int, sensor:int):
         sql = """UPDATE PUBLIC."planet"
-            SET "sensorPhalanx" = %s
+            SET "sensorPhalanx" = %s,
+                "timestamp" = now()
             WHERE PLANET."playerId" = %s
                 AND PLANET."galaxy" = %s
-                AND PLANET."system" = %s
+                AND PLANET."system" = %s 
                 AND PLANET."position" = %s;"""
         
         self._write(sql,(sensor, playerId, galaxy, system, position, ))
