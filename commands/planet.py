@@ -1,9 +1,14 @@
 import interactions
 import logging
+import json
+import datetime
+
+import config
 from utils.authorisation import Authorization
 from utils.db import DB
 from utils.statsCreator import StatsCreator
 from utils.notify import Notify
+
 
 class Planet(interactions.Extension):
     def __init__(self, client, args):
@@ -512,6 +517,45 @@ class Planet(interactions.Extension):
             fields= self._getAlliancePlanetFields(alliancePlanets)
         )
         await ctx.send(embeds=planetEmbed)
+
+    @interactions.extension_command(
+        name="spy",
+        description="TMP",
+        options = [
+            interactions.Option(
+                name="file",
+                description="Spioreport",
+                type=interactions.OptionType.ATTACHMENT,
+                required=True
+            ),
+        ],
+    )
+    async def spy(self, ctx: interactions.CommandContext, file:interactions.Attachment):
+        print(1)
+        print(file.filename)
+        print(file.size)
+
+        byteStream = (await file.download())
+        spyJson = json.load(byteStream)
+
+        if spyJson["header"]["version"] != 1:
+            ctx.send(f"Script version nicht mehr unterstützt. Bitte updaten und Loker speicher Löschen!\nBei fragen <@!{config.ownerId}>", ephemeral=True)
+
+        for spyId,spyData in spyJson["data"].items():
+            print(spyId)
+            type = 2 if spyData["isMoom"] else 1 #1 = Planet, 2 = Moon
+            playerName = spyData["playerName"]
+            playerId = self._db.getPlayerData(playerName)[1]
+            gal = spyData["gal"]
+            sys = spyData["sys"]
+            pos = spyData["pos"]
+            simu = spyData["simu"]
+
+            #get All values from simu Link
+
+            
+            print(datetime.datetime.strptime(spyData["timestamp"],'%d. %b %Y, %H:%M:%S'))
+
 
     def _getAlliancePlanetFields(self,alliancePlanets):
         sortedPlanets = sorted(alliancePlanets, key = lambda x: (x[2], x[3], x[4]))
