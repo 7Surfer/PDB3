@@ -370,13 +370,13 @@ class Stats(interactions.Extension):
             await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
             return
 
-        try:
-            allianceEmbed,allianceComponent = self._getAllianceContent(alliance)
-        except Exception as e:
-            self._logger.warning("Alliance content may have an Error")
-            self._logger.warning(e)
-            await ctx.send(f"{alliance} nicht gefunden")
-            return
+        #try:
+        allianceEmbed,allianceComponent = self._getAllianceContent(alliance)
+        #except Exception as e:
+        # self._logger.warning("Alliance content may have an Error")
+        # self._logger.warning(e)
+        # await ctx.send(f"{alliance} nicht gefunden")
+        # return
         
         await ctx.send(embeds=allianceEmbed, components=interactions.spread_to_rows(*allianceComponent))
 
@@ -654,8 +654,8 @@ class Stats(interactions.Extension):
 
             selectOptions.append(
                 interactions.SelectOption(
-                    label=user[24],
-                    value=user[24],
+                    label=user[27],
+                    value=user[27],
                 )
             )
         
@@ -697,7 +697,7 @@ class Stats(interactions.Extension):
         ]
         
         for player in allianceData[:10]:
-            top10Fields[0].value += player[24] + "\n"
+            top10Fields[0].value += player[27] + "\n"
             top10Fields[1].value += self._statsCreator.formatNumber(player[3]) + "\n"
             top10Fields[2].value += self._statsCreator.formatNumber(player[4]) + "\n"
         
