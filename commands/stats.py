@@ -109,10 +109,10 @@ class Stats(interactions.Extension):
         allianceName = ctx.message.embeds[0].description.split('\n')[1]
         allianceEmbed,allianceComponent = self._getAllianceContent(allianceName)
 
-        #edit original message
-        await ctx.message.edit(embeds=allianceEmbed,components=interactions.spread_to_rows(*allianceComponent))
         #confirm modal
         await ctx.send()
+        #edit original message
+        await ctx.message.edit(embeds=allianceEmbed,components=interactions.spread_to_rows(*allianceComponent))
 
     #Planet Modal
     @interactions.extension_component("btn_planet")
@@ -182,10 +182,11 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
 
-        #edit original message
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         #confirm modal
         await ctx.send()
+        #edit original message
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+        
 
     #Attack research Modal
     @interactions.extension_component("btn_research_attack")
@@ -262,10 +263,11 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
 
-        #edit original message
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         #confirm modal
         await ctx.send()
+        #edit original message
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+        
 
     #Drive research Modal
     @interactions.extension_component("btn_research_drive")
@@ -343,10 +345,10 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
 
+        #confirm Modal
+        await ctx.send()
         #edit original message
         await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        #confirm modal
-        await ctx.send()
    
     @interactions.extension_command(
         name="alliance",
@@ -389,8 +391,8 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         await ctx.send()
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
 
     #Alliance Player Select 2
     @interactions.extension_component("allianceplayerselect2")
@@ -403,8 +405,8 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         await ctx.send()
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
 
     #Alliance Player Select 3
     @interactions.extension_component("allianceplayerselect3")
@@ -417,8 +419,8 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         await ctx.send()
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
 
     #Alliance Player Select 4
     @interactions.extension_component("allianceplayerselect4")
@@ -431,8 +433,8 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         await ctx.send()
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
 
     #Alliance Player Select 5
     @interactions.extension_component("allianceplayerselect5")
@@ -445,8 +447,8 @@ class Stats(interactions.Extension):
             await ctx.send(str(err), ephemeral=True)
             return
         
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
         await ctx.send()
+        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
 
     @interactions.extension_command(
         name="inactive",
