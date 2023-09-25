@@ -19,20 +19,23 @@ class ManageNotify(interactions.Extension):
         description="Fügt den aktuellen Channel zum Nachrichtenverteiler hinzu"
     )
     async def add_notify_channel(self, ctx: interactions.CommandContext):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        existing = self._db.getNotify(str(ctx.channel.id),Notify.CHANNEL)
-        if existing and existing[1] == Notify.CHANNEL:
-            await ctx.send(f"{ctx.channel.mention} bereits registriert", ephemeral=True)
-            return
-        
-        self._db.setNotify(str(ctx.channel.id),Notify.CHANNEL)
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            existing = self._db.getNotify(str(ctx.channel.id),Notify.CHANNEL)
+            if existing and existing[1] == Notify.CHANNEL:
+                await ctx.send(f"{ctx.channel.mention} bereits registriert", ephemeral=True)
+                return
+            
+            self._db.setNotify(str(ctx.channel.id),Notify.CHANNEL)
 
-        await ctx.send(f"{ctx.channel.mention} hinzugefügt")
+            await ctx.send(f"{ctx.channel.mention} hinzugefügt")
+        except Exception as e:
+            self._logger.error(e)
     
     @interactions.extension_command(
         name="notify",
@@ -56,26 +59,29 @@ class ManageNotify(interactions.Extension):
         ]
     )
     async def add_notify(self, ctx: interactions.CommandContext, type:str, username:str=None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        existing = self._db.getNotify(str(ctx.user.id),type)
-        if existing and existing[0][1] == type:
-            await ctx.send(f"{ctx.user.mention} Bereits registriert", ephemeral=True)
-            return
-        
-        if type == Notify.SENSOR_PHALANX:
-            playerData = self._db.getPlayerDataByName(username)
-            if not playerData:
-                await ctx.send(f"Spieler nicht gefunden: {username}", ephemeral=True)
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
                 return
-        
-        self._db.setNotify(str(ctx.user.id), type, str(ctx.guild.id), playerData[1])
+            
+            existing = self._db.getNotify(str(ctx.user.id),type)
+            if existing and existing[0][1] == type:
+                await ctx.send(f"{ctx.user.mention} Bereits registriert", ephemeral=True)
+                return
+            
+            if type == Notify.SENSOR_PHALANX:
+                playerData = self._db.getPlayerDataByName(username)
+                if not playerData:
+                    await ctx.send(f"Spieler nicht gefunden: {username}", ephemeral=True)
+                    return
+            
+            self._db.setNotify(str(ctx.user.id), type, str(ctx.guild.id), playerData[1])
 
-        await ctx.send(f"Im Verteiler aufgenommen {ctx.user.mention}")
+            await ctx.send(f"Im Verteiler aufgenommen {ctx.user.mention}")
+        except Exception as e:
+            self._logger.error(e)
     
     @interactions.extension_command(
         name="del_notify",
@@ -100,20 +106,23 @@ class ManageNotify(interactions.Extension):
         ]
     )
     async def del_notify(self, ctx: interactions.CommandContext, type:str, username:str=None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        existing = self._db.getNotify(str(ctx.user.id),type)
-        if existing and existing[0][1] == type:
-            self._db.delNotify(str(ctx.user.id),type)
-            await ctx.send(f"Gelöscht", ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            existing = self._db.getNotify(str(ctx.user.id),type)
+            if existing and existing[0][1] == type:
+                self._db.delNotify(str(ctx.user.id),type)
+                await ctx.send(f"Gelöscht", ephemeral=True)
+                return
 
 
-        await ctx.send(f"Nicht gefunden", ephemeral=True)
+            await ctx.send(f"Nicht gefunden", ephemeral=True)
+        except Exception as e:
+            self._logger.error(e)
 
 def setup(client, args):
     ManageNotify(client, args)

@@ -54,32 +54,35 @@ class Chart(interactions.Extension):
         ]
     )
     async def chart(self, ctx: interactions.CommandContext, input:str = None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Username: %s", input)
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Username: %s", input)
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        playerId = self._playerResolve.getPlayerId(input)
-        if not playerId:
-            await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
-            return False
-        
-        playerData = self._db.getPlayerDataById(playerId)
-        playerStats = self._db.getPlayerStats(playerData[1])
-        chartUrl = self._chartCreator.getChartUrl(playerStats, playerData[2],
-                        [
-                            self._chartCreator.RANK,
-                            self._chartCreator.SCORE,
-                            self._chartCreator.BUILDINGSCORE,
-                            self._chartCreator.RESEARCHSCORE,
-                            self._chartCreator.FLEETSCORE,
-                            self._chartCreator.DEFENSIVESCORE
-                        ]
-                    )
-        
-        await ctx.send(chartUrl)
+            playerId = self._playerResolve.getPlayerId(input)
+            if not playerId:
+                await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
+                return False
+            
+            playerData = self._db.getPlayerDataById(playerId)
+            playerStats = self._db.getPlayerStats(playerData[1])
+            chartUrl = self._chartCreator.getChartUrl(playerStats, playerData[2],
+                            [
+                                self._chartCreator.RANK,
+                                self._chartCreator.SCORE,
+                                self._chartCreator.BUILDINGSCORE,
+                                self._chartCreator.RESEARCHSCORE,
+                                self._chartCreator.FLEETSCORE,
+                                self._chartCreator.DEFENSIVESCORE
+                            ]
+                        )
+            
+            await ctx.send(chartUrl)
+        except Exception as e:
+            self._logger.error(e)
     
     @interactions.extension_command(
         name="c",
@@ -87,34 +90,37 @@ class Chart(interactions.Extension):
     )
     @interactions.autodefer(delay=5)
     async def c(self, ctx: interactions.CommandContext):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
 
-        if not self._auth.check(ctx.user.id, "chart"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, "chart"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        playerId = self._db.getLinkByDiscordId(str(ctx.user.id))
-        if not playerId:
-            await ctx.send(f"Verlinkung nicht gefunden. Bitte verlinke zuerst dein Discord mit Pr0game durch /link", ephemeral=True)
-            return
+            playerId = self._db.getLinkByDiscordId(str(ctx.user.id))
+            if not playerId:
+                await ctx.send(f"Verlinkung nicht gefunden. Bitte verlinke zuerst dein Discord mit Pr0game durch /link", ephemeral=True)
+                return
 
-        playerData = self._db.getPlayerDataById(playerId[0])
-        if not playerData:
-            await ctx.send(f"Spieler nicht gefunden", ephemeral=True)
-            return False
+            playerData = self._db.getPlayerDataById(playerId[0])
+            if not playerData:
+                await ctx.send(f"Spieler nicht gefunden", ephemeral=True)
+                return False
 
-        playerStats = self._db.getPlayerStats(playerData[1])
-        chartUrl = self._chartCreator.getChartUrl(playerStats, playerData[2],
-                        [
-                            self._chartCreator.RANK,
-                            self._chartCreator.SCORE,
-                            self._chartCreator.BUILDINGSCORE,
-                            self._chartCreator.RESEARCHSCORE,
-                            self._chartCreator.FLEETSCORE,
-                            self._chartCreator.DEFENSIVESCORE
-                        ]
-                    )
-        await ctx.send(chartUrl)
+            playerStats = self._db.getPlayerStats(playerData[1])
+            chartUrl = self._chartCreator.getChartUrl(playerStats, playerData[2],
+                            [
+                                self._chartCreator.RANK,
+                                self._chartCreator.SCORE,
+                                self._chartCreator.BUILDINGSCORE,
+                                self._chartCreator.RESEARCHSCORE,
+                                self._chartCreator.FLEETSCORE,
+                                self._chartCreator.DEFENSIVESCORE
+                            ]
+                        )
+            await ctx.send(chartUrl)
+        except Exception as e:
+            self._logger.error(e)
         
     
     @interactions.extension_command(
@@ -187,26 +193,29 @@ class Chart(interactions.Extension):
     )
     async def customChart(self, ctx: interactions.CommandContext, input:str, type_1:str, type_2:str=None,
                             type_3:str=None, type_4:str=None, type_5:str=None, type_6:str=None, type_7:str=None, type_8:str=None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Username: %s", input)
-        
-        if not self._auth.check(ctx.user.id, "chart"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Username: %s", input)
+            
+            if not self._auth.check(ctx.user.id, "chart"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        playerId = self._playerResolve.getPlayerId(input)
-        if not playerId:
-            await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
-            return
-        
-        playerData = self._db.getPlayerDataById(playerId)
-        playerStats = self._db.getPlayerStats(playerData[1])
+            playerId = self._playerResolve.getPlayerId(input)
+            if not playerId:
+                await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
+                return
+            
+            playerData = self._db.getPlayerDataById(playerId)
+            playerStats = self._db.getPlayerStats(playerData[1])
 
-        rawTypes = [type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8]
-        #remove NONE from types
-        types = [element for element in rawTypes if element is not None]
+            rawTypes = [type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8]
+            #remove NONE from types
+            types = [element for element in rawTypes if element is not None]
 
-        await ctx.send(self._chartCreator.getChartUrl(playerStats,playerData[2],types))
+            await ctx.send(self._chartCreator.getChartUrl(playerStats,playerData[2],types))
+        except Exception as e:
+            self._logger.error(e)
     
     @interactions.extension_command(
         name="compare_chart",
@@ -271,31 +280,34 @@ class Chart(interactions.Extension):
     )
     async def compareChart(self, ctx: interactions.CommandContext, type:str, input1:str, input2:str,
                            input3:str=None, input4:str=None, input5:str=None, input6:str=None, input7:str=None, input8:str=None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Command called: %s from %s",ctx.command.name, ctx.user.username)
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Command called: %s from %s",ctx.command.name, ctx.user.username)
 
-        if not self._auth.check(ctx.user.id, "chart"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-
-        rawInputs = [input1,input2,input3,input4,input5,input6,input7,input8]
-        #remove NONE from names
-        names = [element for element in rawInputs if element is not None]
-
-        allPlayerStats = []
-        allPlayerNames = []
-        for input in names:
-            playerId = self._playerResolve.getPlayerId(input)
-            if not playerId:
-                await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
+            if not self._auth.check(ctx.user.id, "chart"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
                 return
 
-            playerData = self._db.getPlayerDataById(playerId)
-            allPlayerStats.append(self._db.getPlayerStats(playerData[1]))
-            allPlayerNames.append(playerData[2]) #to keep get original upper-/lowercase letters
-        
+            rawInputs = [input1,input2,input3,input4,input5,input6,input7,input8]
+            #remove NONE from names
+            names = [element for element in rawInputs if element is not None]
 
-        await ctx.send(self._chartCreator.getCompareChart(allPlayerStats,allPlayerNames,type))
+            allPlayerStats = []
+            allPlayerNames = []
+            for input in names:
+                playerId = self._playerResolve.getPlayerId(input)
+                if not playerId:
+                    await ctx.send(f"Spieler nicht gefunden: {input}", ephemeral=True)
+                    return
+
+                playerData = self._db.getPlayerDataById(playerId)
+                allPlayerStats.append(self._db.getPlayerStats(playerData[1]))
+                allPlayerNames.append(playerData[2]) #to keep get original upper-/lowercase letters
+            
+
+            await ctx.send(self._chartCreator.getCompareChart(allPlayerStats,allPlayerNames,type))
+        except Exception as e:
+            self._logger.error(e)
 
 def setup(client, args):
     Chart(client, args)

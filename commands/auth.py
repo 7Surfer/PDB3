@@ -30,15 +30,18 @@ class Auth(interactions.Extension):
         scope=config.devDiscordId
     )
     async def admin(self, ctx: interactions.CommandContext, user:interactions.User):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Target: %s", str(user.username))
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Target: %s", str(user.username))
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        self._auth.add(user.id, self._auth.ADMIN, user.username)
-        await ctx.send("Admin authorisiert: " + user.mention)
+            self._auth.add(user.id, self._auth.ADMIN, user.username)
+            await ctx.send("Admin authorisiert: " + user.mention)
+        except Exception as e:
+            self._logger.error(e)
 
 
     #Authorization with command
@@ -56,15 +59,18 @@ class Auth(interactions.Extension):
         scope=config.devDiscordId
     )
     async def auth(self, ctx: interactions.CommandContext, user:interactions.User):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Target: %s", str(user.username))
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Target: %s", str(user.username))
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        self._auth.add(user.id, self._auth.USER, user.username)
-        await ctx.send("User authorisiert: " + user.mention)
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            self._auth.add(user.id, self._auth.USER, user.username)
+            await ctx.send("User authorisiert: " + user.mention)
+        except Exception as e:
+            self._logger.error(e)
 
     #Authorization with context menue
     @interactions.extension_command(
@@ -73,15 +79,18 @@ class Auth(interactions.Extension):
         description="Authorisiert diesen Nutzer für den Bot"
     )
     async def authContext(self, ctx: interactions.CommandContext):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Target: %s", str(ctx.target.user.username))
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Target: %s", str(ctx.target.user.username))
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        self._auth.add(ctx.target.user.id, self._auth.USER, ctx.target.user.username)
-        await ctx.send("User authorisiert: " + ctx.target.user.mention)
+            self._auth.add(ctx.target.user.id, self._auth.USER, ctx.target.user.username)
+            await ctx.send("User authorisiert: " + ctx.target.user.mention)
+        except Exception as e:
+            self._logger.error(e)
         
     
 

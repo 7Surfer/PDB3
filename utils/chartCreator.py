@@ -343,7 +343,11 @@ class ChartCreator():
         
         qc.config["options"]["scales"]["yAxes"] = self._getAxisConfig([type])
 
-        return qc.get_short_url()
+        try:
+            url = qc.get_short_url()
+        except:
+            url = None
+        return url
 
     def _createChartUrl(self, chartData, label, types):
         qc = QuickChart()
@@ -532,7 +536,11 @@ class ChartCreator():
         
         qc.config["options"]["scales"]["yAxes"] = self._getAxisConfig(types)
         
-        return qc.get_short_url()
+        try:
+            url = qc.get_short_url()
+        except:
+            url = None
+        return url
 
     def _getAxisConfig(self,types):
         result = []

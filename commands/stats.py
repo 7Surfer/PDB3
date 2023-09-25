@@ -32,23 +32,26 @@ class Stats(interactions.Extension):
         ],
     )
     async def stats(self, ctx: interactions.CommandContext, input:str = None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("Username: %s", input)
-
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        await ctx.send("Working...",embeds=None)
         try:
-            playerId = self._playerResolve.getPlayerId(input)
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentById(playerId)
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.edit("",embeds=statsEmbed, components=statsComponent)
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("Username: %s", input)
+
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            await ctx.send("Working...",embeds=None)
+            try:
+                playerId = self._playerResolve.getPlayerId(input)
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentById(playerId)
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.edit("",embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
     
     @interactions.extension_command(
         name="s",
@@ -56,301 +59,328 @@ class Stats(interactions.Extension):
     )
     @interactions.autodefer(delay=5)
     async def s(self, ctx: interactions.CommandContext):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-
-        if not self._auth.check(ctx.user.id, "stats"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        playerId = self._db.getLinkByDiscordId(str(ctx.user.id))
-        if not playerId:
-            await ctx.send(f"Verlinkung nicht gefunden. Bitte verlinke zuerst dein Discord mit Pr0game durch /link", ephemeral=True)
-            return
-        
-        await ctx.send("Working...",embeds=None)
-
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentById(playerId[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.edit("",embeds=statsEmbed, components=statsComponent)
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+
+            if not self._auth.check(ctx.user.id, "stats"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            playerId = self._db.getLinkByDiscordId(str(ctx.user.id))
+            if not playerId:
+                await ctx.send(f"Verlinkung nicht gefunden. Bitte verlinke zuerst dein Discord mit Pr0game durch /link", ephemeral=True)
+                return
+            
+            await ctx.send("Working...",embeds=None)
+
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentById(playerId[0])
+            except ValueError as err:
+               self._logger.debug(err)
+               await ctx.send(str(err), ephemeral=True)
+               return
+            
+            await ctx.edit("",embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
 
     #Refresh Button
     @interactions.extension_component("btn_reload")
     @interactions.autodefer(delay=5)
-    async def btn_reload(self, ctx:interactions.ComponentContext):
-        self._logger.info("Button clicked: btn_alliance from %s", ctx.user.username)
-        if not self._auth.check(ctx.user.id, "alliance"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
+    async def btn_reload(self, ctx:interactions.ComponentContext):#
         try:
-            #Workaround get playerName from Title
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
+            self._logger.info("Button clicked: btn_alliance from %s", ctx.user.username)
+            if not self._auth.check(ctx.user.id, "alliance"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            try:
+                #Workaround get playerName from Title
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
 
-        #Update
-        await ctx.edit(embeds=statsEmbed, components=statsComponent)
+            #Update
+            await ctx.edit(embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Button
     @interactions.extension_component("btn_alliance")
     @interactions.autodefer(delay=5)
-    async def btn_alliance(self, ctx:interactions.ComponentContext):   
-        self._logger.debug("Button clicked: btn_alliance from %s", ctx.user.username)
-        if not self._auth.check(ctx.user.id, "alliance"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        #Get Alliance Name from Description
-        allianceName = ctx.message.embeds[0].description.split('\n')[1]
-        allianceEmbed,allianceComponent = self._getAllianceContent(allianceName)
+    async def btn_alliance(self, ctx:interactions.ComponentContext): 
+        try:
+            self._logger.debug("Button clicked: btn_alliance from %s", ctx.user.username)
+            if not self._auth.check(ctx.user.id, "alliance"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            #Get Alliance Name from Description
+            allianceName = ctx.message.embeds[0].description.split('\n')[1]
+            allianceEmbed,allianceComponent = self._getAllianceContent(allianceName)
 
-        #edit original message
-        await ctx.message.edit(embeds=allianceEmbed,components=interactions.spread_to_rows(*allianceComponent))
-        #confirm modal
-        await ctx.send("")
+            #edit original message
+            await ctx.message.edit(embeds=allianceEmbed,components=interactions.spread_to_rows(*allianceComponent))
+            #confirm modal
+            await ctx.send("")
+        except Exception as e:
+            self._logger.error(e)
 
     #Planet Modal
     @interactions.extension_component("btn_planet")
     async def modal_planet(self, ctx:interactions.ComponentContext):      
-        self._logger.info("Button clicked: btn_planet from %s", ctx.user.username)
+        try:
+            self._logger.info("Button clicked: btn_planet from %s", ctx.user.username)
 
-        if not self._auth.check(ctx.user.id, "planet"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        planetModal = interactions.Modal(
-            title="Planet Hinzufügen",
-            custom_id="modal_planet",
-            components=[
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Galaxy",
-                    custom_id='planet_gal',
-                    placeholder='1-4',
-                    required=True,
-                    min_length=1,
-                    max_length=1,
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="System",
-                    custom_id='planet_sys',
-                    placeholder='1-400',
-                    required=True,
-                    min_length=1,
-                    max_length=3
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Position",
-                    custom_id='planet_pos',
-                    placeholder='1-15',
-                    required=True,
-                    min_length=1,
-                    max_length=2
-                )
-            ]
-        )
-        await ctx.popup(planetModal)
+            if not self._auth.check(ctx.user.id, "planet"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            planetModal = interactions.Modal(
+                title="Planet Hinzufügen",
+                custom_id="modal_planet",
+                components=[
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Galaxy",
+                        custom_id='planet_gal',
+                        placeholder='1-4',
+                        required=True,
+                        min_length=1,
+                        max_length=1,
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="System",
+                        custom_id='planet_sys',
+                        placeholder='1-400',
+                        required=True,
+                        min_length=1,
+                        max_length=3
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Position",
+                        custom_id='planet_pos',
+                        placeholder='1-15',
+                        required=True,
+                        min_length=1,
+                        max_length=2
+                    )
+                ]
+            )
+            await ctx.popup(planetModal)
+        except Exception as e:
+            self._logger.error(e)
 
     #Confirm Planet Modal
     @interactions.extension_modal("modal_planet")
     @interactions.autodefer(delay=5)
     async def modal_planet_save(self, ctx:interactions.ComponentContext, galaxy:str, system:str, position:str):
-        self._logger.info("Modal Confirmed from: %s", ctx.user.username)
-        self._logger.debug("Arguments: %s", str((galaxy,system,position)))
-
-        if not self._auth.check(ctx.user.id, "planet"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-
-        #Workaround get PlayerId from Description
-        playerId = ctx.message.embeds[0].description.split('\n')[0] 
-
-        self._db.updatePlanet(galaxy,system,position,playerId)
-        
         try:
-            #Workaround get playerName from Title
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
+            self._logger.info("Modal Confirmed from: %s", ctx.user.username)
+            self._logger.debug("Arguments: %s", str((galaxy,system,position)))
 
-        #confirm modal
-        await ctx.send()
-        #edit original message
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            if not self._auth.check(ctx.user.id, "planet"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+
+            #Workaround get PlayerId from Description
+            playerId = ctx.message.embeds[0].description.split('\n')[0] 
+
+            self._db.updatePlanet(galaxy,system,position,playerId)
+            
+            try:
+                #Workaround get playerName from Title
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+
+            #confirm modal
+            await ctx.send()
+            #edit original message
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
         
 
     #Attack research Modal
     @interactions.extension_component("btn_research_attack")
-    async def modal_research_attack(self, ctx:interactions.ComponentContext):      
-        self._logger.info("Button clicked: btn_research_attack from %s", ctx.user.username)
+    async def modal_research_attack(self, ctx:interactions.ComponentContext):
+        try:      
+            self._logger.info("Button clicked: btn_research_attack from %s", ctx.user.username)
 
-        if not self._auth.check(ctx.user.id, "research"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        #Workaround get PlayerId from Description
-        playerId = ctx.message.embeds[0].description.split('\n')[0] 
-        currentResearch = self._db.getResearch(playerId)
+            if not self._auth.check(ctx.user.id, "research"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            #Workaround get PlayerId from Description
+            playerId = ctx.message.embeds[0].description.split('\n')[0] 
+            currentResearch = self._db.getResearch(playerId)
 
-        if not currentResearch:
-            currentResearch = [0,0,0]
+            if not currentResearch:
+                currentResearch = [0,0,0]
 
-        researchModal = interactions.Modal(
-            title="Angirffsforschung ändern",
-            custom_id="modal_research_attack",
-            components=[
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Waffentechnik",
-                    custom_id='reasearch_weapon',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[0]
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Schildtechnik",
-                    custom_id='reasearch_shield',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[1]
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Raumschiffpanzerung",
-                    custom_id='reasearch_armor',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[2]
-                )
-            ]
-        )
-        await ctx.popup(researchModal)
+            researchModal = interactions.Modal(
+                title="Angirffsforschung ändern",
+                custom_id="modal_research_attack",
+                components=[
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Waffentechnik",
+                        custom_id='reasearch_weapon',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[0]
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Schildtechnik",
+                        custom_id='reasearch_shield',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[1]
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Raumschiffpanzerung",
+                        custom_id='reasearch_armor',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[2]
+                    )
+                ]
+            )
+            await ctx.popup(researchModal)
+        except Exception as e:
+            self._logger.error(e)
 
     #Confirm Attack Research Modal
     @interactions.extension_modal("modal_research_attack")
     @interactions.autodefer(delay=5)
     async def modal_research_attack_save(self, ctx:interactions.ComponentContext, weapon:str, shield:str, armor:str):
-        self._logger.info("Modal Confirmed from: %s", ctx.user.username)
-        self._logger.debug("Arguments: %s", str((weapon,shield,armor)))
-
-        if not self._auth.check(ctx.user.id, "research"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-
-        #Workaround get PlayerId from Description
-        playerId = ctx.message.embeds[0].description.split('\n')[0] 
-
-        self._db.setResearchAttack(playerId,weapon,shield,armor)
-
         try:
-            #Workaround get playerName from Title
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
+            self._logger.info("Modal Confirmed from: %s", ctx.user.username)
+            self._logger.debug("Arguments: %s", str((weapon,shield,armor)))
 
-        #confirm modal
-        await ctx.send()
-        #edit original message
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            if not self._auth.check(ctx.user.id, "research"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+
+            #Workaround get PlayerId from Description
+            playerId = ctx.message.embeds[0].description.split('\n')[0] 
+
+            self._db.setResearchAttack(playerId,weapon,shield,armor)
+
+            try:
+                #Workaround get playerName from Title
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+
+            #confirm modal
+            await ctx.send()
+            #edit original message
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
         
 
     #Drive research Modal
     @interactions.extension_component("btn_research_drive")
     @interactions.autodefer(delay=5)
-    async def modal_research_drive(self, ctx:interactions.ComponentContext):      
-        self._logger.info("Button clicked: btn_research_drive from %s", ctx.user.username)
+    async def modal_research_drive(self, ctx:interactions.ComponentContext):  
+        try:    
+            self._logger.info("Button clicked: btn_research_drive from %s", ctx.user.username)
 
-        if not self._auth.check(ctx.user.id, "research"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        #Workaround get PlayerId from Description
-        playerId = ctx.message.embeds[0].description.split('\n')[0] 
-        currentResearch = self._db.getResearch(playerId)
+            if not self._auth.check(ctx.user.id, "research"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            #Workaround get PlayerId from Description
+            playerId = ctx.message.embeds[0].description.split('\n')[0] 
+            currentResearch = self._db.getResearch(playerId)
 
-        if not currentResearch:
-            currentResearch = [0,0,0,0,0,0]
+            if not currentResearch:
+                currentResearch = [0,0,0,0,0,0]
 
-        researchModal = interactions.Modal(
-            title="Triebwerksforschung ändern",
-            custom_id="modal_research_drive",
-            components=[
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Verbrennungstriebwerk",
-                    custom_id='reasearch_combustion',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[3]
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Impulstriebwerk",
-                    custom_id='reasearch_impulse',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[4]
-                ),
-                interactions.TextInput(
-                    style=interactions.TextStyleType.SHORT,
-                    label="Hyperraumantrieb",
-                    custom_id='reasearch_hyperspace',
-                    required=True,
-                    min_length=1,
-                    placeholder='1',
-                    value=currentResearch[5]
-                )
-            ]
-        )
-        await ctx.popup(researchModal)
+            researchModal = interactions.Modal(
+                title="Triebwerksforschung ändern",
+                custom_id="modal_research_drive",
+                components=[
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Verbrennungstriebwerk",
+                        custom_id='reasearch_combustion',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[3]
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Impulstriebwerk",
+                        custom_id='reasearch_impulse',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[4]
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="Hyperraumantrieb",
+                        custom_id='reasearch_hyperspace',
+                        required=True,
+                        min_length=1,
+                        placeholder='1',
+                        value=currentResearch[5]
+                    )
+                ]
+            )
+            await ctx.popup(researchModal)
+        except Exception as e:
+            self._logger.error(e)
     
     #Confirm Drive Research Modal
     @interactions.extension_modal("modal_research_drive")
     @interactions.autodefer(delay=5)
     async def modal_research_drive_save(self, ctx:interactions.ComponentContext, combustion:str, impulse:str, hyperspace:str):
-        self._logger.info("Modal Confirmed from: %s", ctx.user.username)
-        self._logger.debug("Arguments: %s", str((combustion,impulse,hyperspace)))
-
-        if not self._auth.check(ctx.user.id, "research"):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-
-        #Workaround get PlayerId from Description
-        playerId = ctx.message.embeds[0].description.split('\n')[0] 
-
-        self._db.setResearchDrive(playerId,combustion,impulse,hyperspace)
-
         try:
-            #Workaround get playerName from Title
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
+            self._logger.info("Modal Confirmed from: %s", ctx.user.username)
+            self._logger.debug("Arguments: %s", str((combustion,impulse,hyperspace)))
 
-        #confirm Modal
-        await ctx.send()
-        #edit original message
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            if not self._auth.check(ctx.user.id, "research"):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+
+            #Workaround get PlayerId from Description
+            playerId = ctx.message.embeds[0].description.split('\n')[0] 
+
+            self._db.setResearchDrive(playerId,combustion,impulse,hyperspace)
+
+            try:
+                #Workaround get playerName from Title
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(ctx.message.embeds[0].title)
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+
+            #confirm Modal
+            await ctx.send()
+            #edit original message
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+        except Exception as e:
+            self._logger.error(e)
    
     @interactions.extension_command(
         name="alliance",
@@ -365,92 +395,110 @@ class Stats(interactions.Extension):
         ],
     )
     async def alliance(self, ctx: interactions.CommandContext, alliance:str = None):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        self._logger.debug("AllianceName: %s", alliance)
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            self._logger.debug("AllianceName: %s", alliance)
 
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
 
-        #try:
-        allianceEmbed,allianceComponent = self._getAllianceContent(alliance)
-        #except Exception as e:
-        # self._logger.warning("Alliance content may have an Error")
-        # self._logger.warning(e)
-        # await ctx.send(f"{alliance} nicht gefunden")
-        # return
-        
-        await ctx.send(embeds=allianceEmbed, components=interactions.spread_to_rows(*allianceComponent))
+            #try:
+            allianceEmbed,allianceComponent = self._getAllianceContent(alliance)
+            #except Exception as e:
+            # self._logger.warning("Alliance content may have an Error")
+            # self._logger.warning(e)
+            # await ctx.send(f"{alliance} nicht gefunden")
+            # return
+            
+            await ctx.send(embeds=allianceEmbed, components=interactions.spread_to_rows(*allianceComponent))
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Player Select 1
     @interactions.extension_component("allianceplayerselect1")
     @interactions.autodefer(delay=5)
-    async def alliancePlayerSelect1(self, ctx:interactions.ComponentContext, value): 
+    async def alliancePlayerSelect1(self, ctx:interactions.ComponentContext, value):
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        await ctx.send()
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            await ctx.send()
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Player Select 2
     @interactions.extension_component("allianceplayerselect2")
     @interactions.autodefer(delay=5)
     async def alliancePlayerSelect2(self, ctx:interactions.ComponentContext, value):
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        await ctx.send()
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            await ctx.send()
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Player Select 3
     @interactions.extension_component("allianceplayerselect3")
     @interactions.autodefer(delay=5)
     async def alliancePlayerSelect3(self, ctx:interactions.ComponentContext, value): 
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        await ctx.send()
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            await ctx.send()
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Player Select 4
     @interactions.extension_component("allianceplayerselect4")
     @interactions.autodefer(delay=5)
     async def alliancePlayerSelect4(self, ctx:interactions.ComponentContext, value): 
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        await ctx.send()
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            await ctx.send()
+        except Exception as e:
+            self._logger.error(e)
 
     #Alliance Player Select 5
     @interactions.extension_component("allianceplayerselect5")
     @interactions.autodefer(delay=5)
     async def alliancePlayerSelect5(self, ctx:interactions.ComponentContext, value): 
         try:
-            statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
-        except ValueError as err:
-            self._logger.debug(err)
-            await ctx.send(str(err), ephemeral=True)
-            return
-        
-        await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
-        await ctx.send()
+            try:
+                statsEmbed,statsComponent = self._statsCreator.getStatsContentByName(value[0])
+            except ValueError as err:
+                self._logger.debug(err)
+                await ctx.send(str(err), ephemeral=True)
+                return
+            
+            await ctx.message.edit(embeds=statsEmbed, components=statsComponent)
+            await ctx.send()
+        except Exception as e:
+            self._logger.error(e)
 
     @interactions.extension_command(
         name="inactive",
@@ -484,48 +532,51 @@ class Stats(interactions.Extension):
     )
     @interactions.autodefer(delay=10)
     async def inactive(self, ctx: interactions.CommandContext, galaxy:int, lower_system:int=0, upper_system:int=400, point_limit:int=10000):
-        self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
-        
-        if not self._auth.check(ctx.user.id, ctx.command.name):
-            await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
-            return
-        
-        if galaxy < 0 or galaxy > 4:
-            await ctx.send("Galaxy muss zwischen 1 und 4 liegen", ephemeral=True)
-            return
-        
-        if lower_system < 0 or upper_system > 400:
-            await ctx.send("Systeme müssen zwischen 0 und 400 liegen", ephemeral=True)
-            return
-        
-        if point_limit < 0:
-            await ctx.send("Unteres Punkte Limit muss positiv sein", ephemeral=True)
-            return
+        try:
+            self._logger.info(f"{ctx.user.username}, {ctx.command.name}")
+            
+            if not self._auth.check(ctx.user.id, ctx.command.name):
+                await ctx.send(embeds=self._auth.NOT_AUTHORIZED_EMBED, ephemeral=True)
+                return
+            
+            if galaxy < 0 or galaxy > 4:
+                await ctx.send("Galaxy muss zwischen 1 und 4 liegen", ephemeral=True)
+                return
+            
+            if lower_system < 0 or upper_system > 400:
+                await ctx.send("Systeme müssen zwischen 0 und 400 liegen", ephemeral=True)
+                return
+            
+            if point_limit < 0:
+                await ctx.send("Unteres Punkte Limit muss positiv sein", ephemeral=True)
+                return
 
-        if lower_system > upper_system:
-            lower_system, upper_system = upper_system, lower_system
+            if lower_system > upper_system:
+                lower_system, upper_system = upper_system, lower_system
 
-        playerData = self._db.getCurrentPlayerData()
+            playerData = self._db.getCurrentPlayerData()
 
-        #Group Data by playerId
-        groupedData = {}
-        for datapoint in playerData:
-            playerId = datapoint[1]
-            if not datapoint[1] in groupedData:
-                groupedData[playerId] = {
-                    "playerName": datapoint[0],
-                    "playerId": playerId,
-                    "scores": [],
-                }
-            groupedData[playerId]["scores"].append(datapoint[2])
+            #Group Data by playerId
+            groupedData = {}
+            for datapoint in playerData:
+                playerId = datapoint[1]
+                if not datapoint[1] in groupedData:
+                    groupedData[playerId] = {
+                        "playerName": datapoint[0],
+                        "playerId": playerId,
+                        "scores": [],
+                    }
+                groupedData[playerId]["scores"].append(datapoint[2])
 
-        await ctx.send(embeds=interactions.Embed(title="Working",description="..."))
+            await ctx.send(embeds=interactions.Embed(title="Working",description="..."))
 
-        inactivePlayer = self._getInactivePlayer(groupedData, point_limit)
-        resultData = self._getInactivePlayerPlanets(inactivePlayer, galaxy, lower_system, upper_system) 
-        embed = self._getInactiveEmbed(resultData, galaxy, lower_system, upper_system, point_limit)
+            inactivePlayer = self._getInactivePlayer(groupedData, point_limit)
+            resultData = self._getInactivePlayerPlanets(inactivePlayer, galaxy, lower_system, upper_system) 
+            embed = self._getInactiveEmbed(resultData, galaxy, lower_system, upper_system, point_limit)
 
-        await ctx.edit(embeds=embed)
+            await ctx.edit(embeds=embed)
+        except Exception as e:
+            self._logger.error(e)
 
     def _getInactiveEmbed(self, planetData, galaxy:int, lowerSystem:int, upperSystem:int, lowerLimit:int):
         planetData.sort(key=lambda element: (element["system"], element["position"]))
