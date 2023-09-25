@@ -117,11 +117,15 @@ class StatsCreator():
         for idx,stat in enumerate(playerStats[:-1]):
             currentScore = stat[2]
             nextScore = playerStats[idx+1][2]
-
             if currentScore > nextScore:
                 lastActiveTimestamp = stat[-1]
                 break
         
+        if lastActiveTimestamp == None:
+            lastActiveTimestamp = playerStats[-1][-1]
+            inactiveDays = (datetime.now()-lastActiveTimestamp).days
+            return f"*Inaktiv seit mehr als: {inactiveDays} Tagen*"
+
         inactiveDays = (datetime.now()-lastActiveTimestamp).days
         if inactiveDays <= 1:
             return "*Aktiv*"
